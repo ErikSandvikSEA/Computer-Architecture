@@ -15,12 +15,6 @@ class CPU:
             "HLT": 0b00000001,
             "LDI": 0b10000010,
             "PRN": 0b01000111,
-            "MUL": 0b10100010,
-            "PUSH": 0b01000101,
-            "POP": 0b01000110,
-            "CALL": 0b01010000,
-            "RET": 0b00010001,
-            "ADD": 0b10100000,
         }
 
     def load(self):
@@ -43,17 +37,28 @@ class CPU:
         #     self.memory[address] = instruction
         #     address += 1
 
-        with open(sys.argv[1], "r") as program:
-            for instruction in program:
-                # print(instruction)
-                if "#" in instruction:
-                    instruction = instruction.split()[0]
-                    if instruction == "#":
-                        continue
-                else:
-                    instruction = instruction.replace("\n", "")
-                self.memory[address] = int(instruction, 2)
-                address += 1
+        if len(sys.argv) != 2:
+            print("usage: cPU.py progname")
+            sys.exit(1)
+        try:
+            with open(sys.argv[1], "r") as program:
+                for instruction in program:
+                    # print(instruction)
+                    if "#" in instruction:
+                        instruction = instruction.split()[0]
+                        if instruction == "#":
+                            continue
+                    else:
+                        instruction = instruction.replace("\n", "")
+                    self.memory[address] = int(instruction, 2)
+                    address += 1
+        except FileNotFoundError:
+            print(f"Couldn't open {sys.argv[1]}")
+            sys.exit(2)
+
+            if address == 0:
+                print("Program was empty")
+                sys.exit(3)
 
     def ram_read(self, idx):
         return self.memory[idx]
