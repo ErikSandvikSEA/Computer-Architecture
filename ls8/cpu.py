@@ -15,6 +15,7 @@ class CPU:
             "HLT": 0b00000001,
             "LDI": 0b10000010,
             "PRN": 0b01000111,
+            "MUL": 0b10100010,  # MUL R0,R1
         }
 
     def load(self):
@@ -70,8 +71,11 @@ class CPU:
         """ALU operations."""
 
         if op == "ADD":
-            self.reg[reg_a] += self.reg[reg_b]
-        # elif op == "SUB": etc
+            self.registers[reg_a] += self.registers[reg_b]
+        elif op == "SUB":
+            self.registers[reg_a] -= self.registers[reg_b]
+        elif op == "MUL":
+            self.registers[reg_a] *= self.registers[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -120,4 +124,10 @@ class CPU:
                 val = self.memory[self.pc + 2]
                 self.registers[reg_num] = val
                 self.pc += 3
+            elif ir == self.machine_codes["MUL"]:
+                reg_num1 = self.memory[self.pc + 1]
+                reg_num2 = self.memory[self.pc + 2]
+                self.alu("MUL", reg_num1, reg_num2)
+                self.pc += 3
+
         # self.trace()
