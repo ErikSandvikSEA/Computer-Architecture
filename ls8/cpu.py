@@ -16,6 +16,7 @@ class CPU:
             "LDI": 0b10000010,
             "PRN": 0b01000111,
             "MUL": 0b10100010,  # MUL R0,R1
+            "SUB": 0b10100001,  # SUB R0, R1
         }
 
     def load(self):
@@ -129,5 +130,9 @@ class CPU:
                 reg_num2 = self.memory[self.pc + 2]
                 self.alu("MUL", reg_num1, reg_num2)
                 self.pc += 3
-
+            elif ir == self.machine_codes["SUB"]:
+                reg_num1 = self.memory[self.pc + 1]
+                reg_num2 = self.memory[self.pc + 2]
+                self.alu("SUB", reg_num1, reg_num2)
+                self.pc += 3
         # self.trace()
