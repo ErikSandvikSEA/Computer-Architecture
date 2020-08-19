@@ -17,7 +17,10 @@ class CPU:
             "PRN": 0b01000111,
             "MUL": 0b10100010,  # MUL R0,R1
             "SUB": 0b10100001,  # SUB R0, R1
+            "PUSH": 0b01000101,
+            "POP": 0b01000110,
         }
+        self.sp = 7  # from LS8 spec
 
     def load(self):
         """Load a program into memory."""
@@ -135,4 +138,25 @@ class CPU:
                 reg_num2 = self.memory[self.pc + 2]
                 self.alu("SUB", reg_num1, reg_num2)
                 self.pc += 3
+            elif ir == self.machine_codes["PUSH"]:
+                # decrement sp
+                self.registers[self.sp] -= 1
+
+                # get val from register
+                reg_num = self.memory[self.pc + 1]
+                value = self.registers[reg_num]
+
+                # store it on the stack
+                top_of_stack_address = self.registers[self.sp]
+                self.memory[top_of_stack_address] = value
+
+                self.pc += 2
+
+            elif ir == self.machine_codes["POP"]:
+                value_addr = self.registers[self.sp]
+                value = self.memory[value_addr]
+                reg_num = self.memory[self.pc + 1]
+                self.registers[reg_num] = value
+                self.registers[self.sp] += 1
+                self.pc += 2
         # self.trace()
