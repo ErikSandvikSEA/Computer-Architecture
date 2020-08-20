@@ -15,10 +15,13 @@ class CPU:
             "HLT": 0b00000001,
             "LDI": 0b10000010,
             "PRN": 0b01000111,
+            "ADD": 0b10100000,
             "MUL": 0b10100010,  # MUL R0,R1
             "SUB": 0b10100001,  # SUB R0, R1
             "PUSH": 0b01000101,
             "POP": 0b01000110,
+            "CALL": 0b01010000,
+            "RET": 0b00010001,
         }
         self.sp = 7  # from LS8 spec
 
@@ -128,6 +131,11 @@ class CPU:
                 val = self.memory[self.pc + 2]
                 self.registers[reg_num] = val
                 self.pc += 3
+            elif ir == self.machine_codes["ADD"]:
+                reg_slot_1 = self.memory[self.pc + 1]
+                reg_slot_2 = self.memory[self.pc + 2]
+                self.alu("ADD", reg_slot_1, reg_slot_2)
+                self.pc += 3
             elif ir == self.machine_codes["MUL"]:
                 reg_num1 = self.memory[self.pc + 1]
                 reg_num2 = self.memory[self.pc + 2]
@@ -159,4 +167,20 @@ class CPU:
                 self.registers[reg_num] = value
                 self.registers[self.sp] += 1
                 self.pc += 2
-        # self.trace()
+
+            elif ir == self.machine_codes["CALL"]:
+                self.registers[self.sp] -= 1
+                return_address = self.pc + 2
+                value_address = self.registers[self.sp]
+                self.memory[value_address] = return_address
+                reg_num = self.memory[self.pc + 1]
+                subroutine_address = self.registers[reg_num]
+                self.pc = subroutine_address
+
+            elif ir == self.machine_codes["RET"]:
+                value_address = self.registers[self.sp]
+                return_address = self.memory[value_address]
+                self.registers[self.sp] += 1
+                self.pc = return_address
+
+        self.trace()
