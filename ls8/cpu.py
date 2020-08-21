@@ -22,8 +22,13 @@ class CPU:
             "POP": 0b01000110,
             "CALL": 0b01010000,
             "RET": 0b00010001,
+            "CMP": 0b10100111,
+            "JMP": 0b01010100,
+            "JEQ": 0b01010101,
+            "JNE": 0b01010110,
         }
         self.sp = 7  # from LS8 spec
+        self.flags = 0
 
     def load(self):
         """Load a program into memory."""
@@ -83,6 +88,13 @@ class CPU:
             self.registers[reg_a] -= self.registers[reg_b]
         elif op == "MUL":
             self.registers[reg_a] *= self.registers[reg_b]
+        elif op == "CMP":
+            if self.registers[reg_a] < self.registers[reg_b]:
+                self.flags = 0b00000100  # L in binary (less than)
+            elif self.registers[reg_a] > self.registers[reg_b]:
+                self.flags = 0b00000010  # G in binary (greater than)
+            else:
+                self.flags = 0b00000001  # E in binary (equal)
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -182,5 +194,28 @@ class CPU:
                 return_address = self.memory[value_address]
                 self.registers[self.sp] += 1
                 self.pc = return_address
+
+            elif ir == self.machine_codes["CMP"]:
+                reg_num1 = self.memory[self.pc + 1]
+                reg_num2 = self.memory[self.pc + 2]
+                self.alu("CMP", reg_num1, reg_num2)
+                self.pc += 3
+
+            elif ir == self.machine_codes["JMP"]:
+                reg_num = self.memory[self.pc + 1]
+                self.pc = self.registers[reg_num]
+
+            elif ir == self.machine_codes["JEQ"]:
+                reg_num = self.memory[self.pc + 1]
+                if self.flags == 0b00000001:  # E in binary (equal)
+                    self.pc = self.registers[reg_num]
+                else:
+                    self.pc += 2
+            elif ir == self.machine_codes["JNE"]:
+                reg_num = self.memory[self.pc + 1]
+                if self.flags != 0b00000001:  # E in binary this shows they are unequal!
+                    self.pc = self.registers[reg_num]
+                else:
+                    self.pc += 2
 
         self.trace()
