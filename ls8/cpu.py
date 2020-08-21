@@ -26,6 +26,13 @@ class CPU:
             "JMP": 0b01010100,
             "JEQ": 0b01010101,
             "JNE": 0b01010110,
+            "AND": 0b10101000,
+            "OR": 0b10101010,
+            "XOR": 0b10101011,
+            "NOT": 0b01101001,
+            "SHL": 0b10101100,
+            "SHR": 0b10101101,
+            "MOD": 0b10100100,
         }
         self.sp = 7  # from LS8 spec
         self.flags = 0
@@ -95,6 +102,12 @@ class CPU:
                 self.flags = 0b00000010  # G in binary (greater than)
             else:
                 self.flags = 0b00000001  # E in binary (equal)
+        elif op == "AND":
+            self.registers[reg_a] &= self.registers[reg_b]
+        elif op == "OR":
+            self.registers[reg_a] |= self.registers[reg_b]
+        elif op == "XOR":
+            self.registers[reg_a] ^= self.registers[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -217,5 +230,20 @@ class CPU:
                     self.pc = self.registers[reg_num]
                 else:
                     self.pc += 2
+            elif ir == self.machine_codes["AND"]:
+                reg_num1 = self.memory[self.pc + 1]
+                reg_num2 = self.memory[self.pc + 2]
+                self.alu("AND", reg_num1, reg_num2)
+                self.pc += 3
+            elif ir == self.machine_codes["OR"]:
+                reg_num1 = self.memory[self.pc + 1]
+                reg_num2 = self.memory[self.pc + 2]
+                self.alu("OR", reg_num1, reg_num2)
+                self.pc += 3
+            elif ir == self.machine_codes["XOR"]:
+                reg_num1 = self.memory[self.pc + 1]
+                reg_num2 = self.memory[self.pc + 2]
+                self.alu("XOR", reg_num1, reg_num2)
+                self.pc += 3
 
         self.trace()
